@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.tayyar.tiletap.databinding.FragmentMainBinding
 import com.tayyar.tiletap.game.GameActivity
@@ -18,6 +20,12 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val binding: FragmentMainBinding = FragmentMainBinding.inflate(inflater, container, false)
+
+        // Open drawer when menu button is clicked
+        binding.menuButton.setOnClickListener {
+            val drawerLayout = requireActivity().findViewById<DrawerLayout>(R.id.drawerLayout)
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
 
         // Add on click listener to the button to start the game
         binding.startButton.setOnClickListener {

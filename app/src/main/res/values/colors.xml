@@ -4,4 +4,15 @@
     <color name="white">#FFFFFF</color>
     <color name="gray">#576675</color>
     <color name="green">#1AFF00</color>
+
+    <!-- Space/Neon Theme Colors -->
+    <color name="space_dark_purple">#0D0B21</color>
+    <color name="space_deep_blue">#050414</color>
+    <color name="neon_purple">#B026FF</color>
+    <color name="neon_blue">#00D2FF</color>
+    <color name="soft_purple">#4B1B7A</color>
+    <color name="card_bg_glass">#33FFFFFF</color>
+    <color name="card_bg_dark">#1A1433</color>
+    <color name="gold">#FFD700</color>
+    <color name="transparent">#00000000</color>
 </resources>

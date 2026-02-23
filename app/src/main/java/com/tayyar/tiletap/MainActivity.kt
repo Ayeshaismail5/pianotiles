@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.tayyar.tiletap.databinding.ActivityMainBinding
 
@@ -16,6 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
     private lateinit var drawerLayout: DrawerLayout
+    private lateinit var appBarConfiguration: AppBarConfiguration
 
     private lateinit var imm: InputMethodManager
 
@@ -25,18 +27,25 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
 
+        setSupportActionBar(binding.toolbar)
+
         // set drawer
         navController = findNavController(R.id.pianoTilesNavHostFragment)
         drawerLayout = binding.drawerLayout
-        NavigationUI.setupActionBarWithNavController(this, navController, drawerLayout)
+        
+        appBarConfiguration = AppBarConfiguration(setOf(R.id.mainFragment), drawerLayout)
+        
+        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration)
         NavigationUI.setupWithNavController(binding.navView, navController)
 
         // menu can only be opened in main menu
         navController.addOnDestinationChangedListener { controller, destination, _ ->
             if (destination.id == controller.graph.startDestinationId) {
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+                supportActionBar?.hide()
             } else {
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+                supportActionBar?.show()
             }
         }
     }
@@ -51,7 +60,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return NavigationUI.navigateUp(navController, drawerLayout)
+        return NavigationUI.navigateUp(navController, appBarConfiguration) || super.onSupportNavigateUp()
     }
 
 }

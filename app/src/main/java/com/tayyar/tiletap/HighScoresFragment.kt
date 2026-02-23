@@ -24,13 +24,15 @@ class HighScoresFragment : Fragment() {
             getString(R.string.shared_preferences_name),
             AppCompatActivity.MODE_PRIVATE
         )
-        val highScores = sharedPref?.all?.toSortedMap(compareBy<String> { it.toInt() })
+        val highScores = sharedPref?.all?.toSortedMap(compareBy<String> { it.toIntOrNull() ?: 0 })
 
-        for (score in highScores!!.iterator()) {
-            val item = inflater.inflate(R.layout.list_item, binding.highScoresTable, false)
-            item.findViewById<TextView>(R.id.speed).text = score.key
-            item.findViewById<TextView>(R.id.score).text = score.value.toString()
-            binding.highScoresTable.addView(item)
+        if (highScores != null) {
+            for (score in highScores.iterator()) {
+                val item = inflater.inflate(R.layout.list_item, binding.highScoresTable, false)
+                item.findViewById<TextView>(R.id.speed).text = score.key
+                item.findViewById<TextView>(R.id.score).text = score.value.toString()
+                binding.highScoresTable.addView(item)
+            }
         }
 
         return binding.root

@@ -4,20 +4,21 @@ import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.*
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.tayyar.tiletap.R
 
 class GameActivity : AppCompatActivity() {
 
     private lateinit var gameView: GameView
-    private lateinit var img: View
+    private lateinit var gameOverLayout: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_game)
 
-        // set customizable options
         val speed = intent.getStringExtra("speed")
         val music = intent.getBooleanExtra("music", true)
         val vibration = intent.getBooleanExtra("vibration", true)
@@ -27,7 +28,6 @@ class GameActivity : AppCompatActivity() {
         GameView.vibration = vibration
         Tile.speedIncrease = speedIncrease
 
-        // set tile speed according to resolution
         val displayMetrics = DisplayMetrics()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             display?.getRealMetrics(displayMetrics)
@@ -39,7 +39,6 @@ class GameActivity : AppCompatActivity() {
         Tile.speed = speed!!.toDouble() * height / 1280
         GameView.initialSpeed = speed.toInt()
 
-        // add game view
         val screen = (findViewById<View>(android.R.id.content) as ViewGroup).getChildAt(0) as ViewGroup
         gameView = GameView(this)
         gameView.layoutParams =
@@ -49,15 +48,19 @@ class GameActivity : AppCompatActivity() {
             )
         screen.addView(gameView)
 
-        // set restart button
-        img = layoutInflater.inflate(R.layout.centered_image, screen, false)
-        img.visibility = View.GONE
-        img.setOnClickListener {
+        gameOverLayout = layoutInflater.inflate(R.layout.game_over_layout, screen, false)
+        gameOverLayout.visibility = View.GONE
+        
+        gameOverLayout.findViewById<ImageButton>(R.id.replayButton).setOnClickListener {
             gameView.restart()
         }
-        screen.addView(img)
+        
+        gameOverLayout.findViewById<ImageButton>(R.id.homeButton).setOnClickListener {
+            finish()
+        }
+        
+        screen.addView(gameOverLayout)
 
-        // remove notification bar
         @Suppress("DEPRECATION")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.insetsController?.hide(WindowInsets.Type.statusBars())
@@ -71,13 +74,24 @@ class GameActivity : AppCompatActivity() {
 
     fun showReplayButton() {
         this@GameActivity.runOnUiThread {
-            img.visibility = View.VISIBLE
+            val score = GameView.score
+            gameOverLayout.findViewById<TextView>(R.id.scoreResult).text = "Your Score: $score"
+            
+            val appreciation = when {
+                score >= 150 -> "Legendary! 🏆🤩"
+                score >= 100 -> "Excellent! 🔥🌟"
+                score >= 50 -> "Good Job! 👍✨"
+                else -> "Try Again! 💪"
+            }
+            gameOverLayout.findViewById<TextView>(R.id.appreciationText).text = appreciation
+
+            gameOverLayout.visibility = View.VISIBLE
         }
     }
 
     fun hideReplayButton() {
         this@GameActivity.runOnUiThread {
-            img.visibility = View.GONE
+            gameOverLayout.visibility = View.GONE
         }
     }
 

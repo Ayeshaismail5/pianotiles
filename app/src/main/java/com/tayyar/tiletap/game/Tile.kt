@@ -1,19 +1,16 @@
 package com.tayyar.tiletap.game
 
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Rect
+import android.graphics.*
 import android.util.Log
+import androidx.core.content.ContextCompat
+import com.tayyar.tiletap.R
 import com.tayyar.tiletap.game.GameView.Companion.screenWidth
 import com.tayyar.tiletap.game.GameView.Companion.screenHeight
 import kotlin.math.roundToInt
 
 /**
  * Tile Class.
- * It goes from top to bottom
- * Purpose of the game is to press the tile
  */
-
 class Tile(blackPaint : Paint, private var pressedTileColor: Paint, private var redPaint: Paint, row : Int) {
 
     companion object {
@@ -32,31 +29,46 @@ class Tile(blackPaint : Paint, private var pressedTileColor: Paint, private var 
     private var outOfBounds = false
     var gameOver = false
 
-    private var tileColor = blackPaint
-
+    private var tilePaint = Paint()
 
     init {
         startX = row * (screenWidth/4)
         startY = -screenHeight/4
         endX = screenWidth/4 + startX
         endY = screenHeight/4 + startY
+        
+        tilePaint.color = Color.BLACK
+        tilePaint.style = Paint.Style.FILL
     }
 
     /**
      * Draws the object on to the canvas.
      */
     fun draw(canvas: Canvas) {
-        canvas.drawRect(Rect(startX, startY, endX, endY), tileColor)
+        if (pressed) {
+            // Use the same gradient as the start button for pressed tiles
+            val neonPurple = Color.parseColor("#B026FF")
+            val neonBlue = Color.parseColor("#00D2FF")
+            tilePaint.shader = LinearGradient(
+                startX.toFloat(), startY.toFloat(), endX.toFloat(), endY.toFloat(),
+                neonPurple, neonBlue, Shader.TileMode.CLAMP
+            )
+        } else if (outOfBounds) {
+            tilePaint.shader = null
+            tilePaint.color = Color.RED
+        } else {
+            tilePaint.shader = null
+            tilePaint.color = Color.BLACK
+        }
+        
+        canvas.drawRect(Rect(startX, startY, endX, endY), tilePaint)
     }
 
     /**
      * update properties for the game object
      */
     fun update(frameNo: Int) {
-
-        //stop the tile if it reaches the end
         if (startY >= screenHeight && !pressed) {
-            tileColor = redPaint
             outOfBounds = true
             speed = -40.0
         }
@@ -66,23 +78,20 @@ class Tile(blackPaint : Paint, private var pressedTileColor: Paint, private var 
         if (startY >= screenHeight && pressed) {
             outOfScreen = true
         }
-        Log.d("atii", speed.toString())
+        
         if (speedIncrease && speed != 0.0 && frameNo % 60 == 0 && speed < 50) {
             speed += 1 / (speed * 20)
         }
         startY += (speed.roundToInt())
         endY += (speed.roundToInt())
-
     }
 
     fun checkTouch (x: Float, y: Float) : Boolean {
         if (x > startX - screenWidth/30 && x < endX + screenWidth/30 && y < endY && y > startY && !pressed) {
-            tileColor = pressedTileColor
             GameView.score++
             pressed = true
             return pressed
         }
         return false
     }
-
 }
