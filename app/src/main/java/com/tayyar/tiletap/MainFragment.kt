@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -21,6 +22,13 @@ class MainFragment : Fragment() {
     ): View {
         val binding: FragmentMainBinding = FragmentMainBinding.inflate(inflater, container, false)
 
+        // Setup Speed Dropdown (Spinner) with custom big neon blue item
+        val speeds = arrayOf("20", "30", "40")
+        val adapter = ArrayAdapter(requireContext(), R.layout.spinner_item, speeds)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.speedSpinner.adapter = adapter
+        binding.speedSpinner.setSelection(1) // Default to 30
+
         // Open drawer when menu button is clicked
         binding.menuButton.setOnClickListener {
             val drawerLayout = requireActivity().findViewById<DrawerLayout>(R.id.drawerLayout)
@@ -29,7 +37,7 @@ class MainFragment : Fragment() {
 
         // Add on click listener to the button to start the game
         binding.startButton.setOnClickListener {
-            val speed = binding.speedInput.text.toString()
+            val speed = binding.speedSpinner.selectedItem.toString()
             val music = binding.musicBox.isChecked
             val vibration = binding.vibrationBox.isChecked
             val speedIncrease = binding.speedIncreaseBox.isChecked

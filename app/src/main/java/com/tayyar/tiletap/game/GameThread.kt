@@ -7,7 +7,7 @@ import android.view.SurfaceHolder
 class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView: GameView) : Thread() {
     private var running: Boolean = false
 
-    private val targetFPS = 60 // frames per second, the rate at which you would like to refresh the Canvas
+    private val targetFPS = 90 // Increased to 90 for smoother high-speed gameplay
 
     fun setRunning(isRunning: Boolean) {
         this.running = isRunning
@@ -27,20 +27,30 @@ class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView:
 
                 // half a second delay before game starts
                 if (System.nanoTime() - firstTime < 500000000) {
-                    canvas = this.surfaceHolder.lockCanvas()
-                    synchronized(surfaceHolder) {
-                        this.gameView.drawLines(canvas!!)
-                        this.gameView.drawScore(canvas!!)
+                    try {
+                        canvas = this.surfaceHolder.lockCanvas()
+                        synchronized(surfaceHolder) {
+                            if (canvas != null) {
+                                this.gameView.drawLines(canvas!!)
+                                this.gameView.drawScore(canvas!!)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        if (canvas != null) {
+                            surfaceHolder.unlockCanvasAndPost(canvas)
+                        }
                     }
-                    surfaceHolder.unlockCanvasAndPost(canvas)
                     continue
                 }
 
                 try {
-                    // locking the canvas allows us to draw on to it
                     canvas = this.surfaceHolder.lockCanvas()
                     synchronized(surfaceHolder) {
-                        this.gameView.draw(canvas!!)
+                        if (canvas != null) {
+                            this.gameView.draw(canvas!!)
+                        }
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -56,12 +66,18 @@ class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView:
 
                 timeMillis = (System.nanoTime() - startTime) / 1000000
                 waitTime = targetTime - timeMillis
-                if (waitTime < 0) {
-                    waitTime = 0
+                
+                if (waitTime > 0) {
+                    try {
+                        sleep(waitTime)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
-
+            } else {
+                // If not running, don't hog the CPU, sleep a bit
                 try {
-                    sleep(waitTime)
+                    sleep(100)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

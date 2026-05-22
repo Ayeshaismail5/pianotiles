@@ -1,5 +1,9 @@
 package com.tayyar.tiletap.game
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -13,6 +17,14 @@ class GameActivity : AppCompatActivity() {
 
     private lateinit var gameView: GameView
     private lateinit var gameOverLayout: View
+
+    // BroadcastReceiver for Smart Pause
+    private val smartPauseReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            // Pause the game when screen turns off or power is disconnected
+            gameView.pauseGame()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +82,18 @@ class GameActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
             )
         }
+
+        // Register BroadcastReceiver for Smart Pause
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_POWER_DISCONNECTED)
+        }
+        registerReceiver(smartPauseReceiver, filter)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        gameView.pauseGame()
     }
 
     fun showReplayButton() {
@@ -84,7 +108,7 @@ class GameActivity : AppCompatActivity() {
                 else -> "Try Again! 💪"
             }
             gameOverLayout.findViewById<TextView>(R.id.appreciationText).text = appreciation
-
+            
             gameOverLayout.visibility = View.VISIBLE
         }
     }
@@ -96,6 +120,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        unregisterReceiver(smartPauseReceiver)
         gameView.destroy()
         super.onDestroy()
     }

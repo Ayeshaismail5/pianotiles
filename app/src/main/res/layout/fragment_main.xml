@@ -58,18 +58,14 @@
             android:textSize="18sp"
             android:fontFamily="sans-serif-medium"/>
 
-        <EditText
-            android:id="@+id/speedInput"
+        <Spinner
+            android:id="@+id/speedSpinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:background="@null"
-            android:fontFamily="sans-serif-black"
-            android:inputType="number"
-            android:maxLength="2"
-            android:text="30"
-            android:textColor="@color/neon_blue"
-            android:textSize="48sp" />
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/neon_blue"
+            android:padding="8dp" />
 
         <TextView
             android:id="@+id/speedAdvice"

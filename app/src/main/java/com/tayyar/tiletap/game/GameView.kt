@@ -53,7 +53,8 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
 
     private var scoreSize = 120f
     private var started = false
-    private var paused = false
+    var isPaused = false
+        private set
 
     private var soundPool: SoundPool? = null
     private var failSound: Int? = null
@@ -134,11 +135,8 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         }
 
         if (music) {
-            // Background music setup
             mediaPlayer = MediaPlayer.create(context, R.raw.a)
             mediaPlayer?.isLooping = true
-            
-            // Sound pool for game over only
             soundPool = SoundPool(5, AudioManager.STREAM_MUSIC, 0)
             failSound = soundPool?.load(context, R.raw.failsound, 1)
         }
@@ -196,7 +194,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         lastRow = row
         gameOver = false
         gameOverOver = false
-        paused = false
+        isPaused = false
         lastMilestoneScore = 0
         currentMessage = null
         progressMilestone = 100
@@ -223,7 +221,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-        if (!paused) frameNo++
+        if (!isPaused) frameNo++
 
         if (gameOver && !gameOverOver) {
             mediaPlayer?.pause()
@@ -238,7 +236,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         drawBackground(canvas)
         drawLines(canvas)
 
-        if (!paused) {
+        if (!isPaused) {
             if (tiles.isNotEmpty() && tiles.first.outOfScreen) {
                 tiles.poll()
             }
@@ -252,7 +250,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         }
 
         for (tile in tiles) {
-            if (!paused) tile.update(frameNo)
+            if (!isPaused) tile.update(frameNo)
             tile.draw(canvas)
             if (tile.gameOver) {
                 gameOver = true
@@ -268,7 +266,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
 
         drawUI(canvas)
         
-        if (paused) {
+        if (isPaused) {
             drawPauseOverlay(canvas)
         }
     }
@@ -296,7 +294,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         // Pause Button
         val pauseSize = 60f
         val pauseMargin = 40f
-        if (paused) {
+        if (isPaused) {
             val path = Path()
             path.moveTo(pauseMargin, pauseMargin)
             path.lineTo(pauseMargin + pauseSize, pauseMargin + pauseSize / 2)
@@ -393,7 +391,7 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
                         return true
                     }
 
-                    if (paused) return true
+                    if (isPaused) return true
 
                     if (Tile.speed > 0) {
                         touchedX = tx
@@ -401,7 +399,6 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
                         tempTiles = CopyOnWriteArrayList(tiles)
                         for (tile in tempTiles) {
                             if (tile.checkTouch(touchedX, touchedY)) {
-                                // Background music is already playing, so we don't restart it here
                                 if (Build.VERSION.SDK_INT >= 26) {
                                     vibrator?.vibrate(VibrationEffect.createOneShot(40, VibrationEffect.DEFAULT_AMPLITUDE))
                                 } else {
@@ -427,9 +424,18 @@ class GameView(context: Context) : SurfaceView(context), SurfaceHolder.Callback 
         return true
     }
 
-    private fun togglePause() {
-        paused = !paused
-        if (paused) {
+    fun pauseGame() {
+        if (!isPaused) {
+            lastTileSpeed = Tile.speed
+            Tile.speed = 0.0
+            isPaused = true
+            mediaPlayer?.pause()
+        }
+    }
+
+    fun togglePause() {
+        isPaused = !isPaused
+        if (isPaused) {
             lastTileSpeed = Tile.speed
             Tile.speed = 0.0
             mediaPlayer?.pause()
